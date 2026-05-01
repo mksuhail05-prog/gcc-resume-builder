@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Edit Your ATS CV — GCC Resume Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Source+Serif+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="editor-page">
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">GCC</span>
+      <span>GCC Resume Builder</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="templates.html">Templates</a>
+      <a href="editor.html?action=upload">Upload CV</a>
+      <a href="editor.html?action=upload">Upload CV</a>
+    </div>
+  </div>
+</nav>
+
+<div class="editor-toolbar">
+  <div class="editor-toolbar-left">
+    <a href="templates.html" class="btn btn-ghost btn-sm">← All templates</a>
+    <select id="template-switcher" class="template-switcher" aria-label="Switch template"></select>
+  </div>
+  <div class="editor-toolbar-right">
+    <button id="btn-pdf" class="btn btn-secondary btn-sm">Download PDF</button>
+    <button id="btn-docx" class="btn btn-primary btn-sm">Download Word</button>
+  </div>
+</div>
+
+<main class="editor-layout">
+  <!-- LEFT: Form -->
+  <aside class="editor-form" id="form-pane">
+
+    <section class="form-section import-section" id="section-start">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">✓</span> Start Your ATS CV</div>
+      </div>
+      <div class="start-options">
+        <button type="button" class="start-option active" data-start-mode="upload">
+          <strong>Upload your current CV and update</strong>
+          <span>Upload PDF, Word, or text. The editor will prefill sections automatically.</span>
+        </button>
+        <button type="button" class="start-option" data-start-mode="new">
+          <strong>Create a new CV</strong>
+          <span>Start with a clean ATS-friendly template and fill the sections yourself.</span>
+        </button>
+      </div>
+      <div class="upload-panel" id="upload-panel">
+        <label class="upload-drop" for="cv-upload">
+          <span class="upload-icon">↑</span>
+          <strong>Upload your current CV</strong>
+          <small>Supports .pdf, .docx, and .txt files. Review all imported text before downloading.</small>
+          <input id="cv-upload" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" />
+        </label>
+        <div class="import-status" id="import-status">Imported details will appear in the form below.</div>
+      </div>
+    </section>
+
+    <!-- Personal -->
+    <section class="form-section" id="section-personal">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">1</span> Personal Details</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field form-grid-full">
+          <label>Full name</label>
+          <input type="text" data-field="personal.fullName" placeholder="Jane Doe" />
+        </div>
+        <div class="form-field form-grid-full">
+          <label>Job title</label>
+          <input type="text" data-field="personal.title" placeholder="Senior Marketing Manager" />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" data-field="personal.email" placeholder="jane@email.com" />
+        </div>
+        <div class="form-field">
+          <label>Phone</label>
+          <input type="tel" data-field="personal.phone" placeholder="(555) 123-4567" />
+        </div>
+        <div class="form-field">
+          <label>Location</label>
+          <input type="text" data-field="personal.location" placeholder="New York, NY" />
+        </div>
+        <div class="form-field">
+          <label>Website</label>
+          <input type="text" data-field="personal.website" placeholder="janedoe.com" />
+        </div>
+        <div class="form-field form-grid-full">
+          <label>LinkedIn</label>
+          <input type="text" data-field="personal.linkedin" placeholder="linkedin.com/in/janedoe" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="form-section" id="section-summary">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">2</span> Professional Summary</div>
+      </div>
+      <div class="form-field">
+        <label>A short paragraph that introduces you</label>
+        <textarea data-field="summary" rows="4" placeholder="Experienced... with a focus on..."></textarea>
+      </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="form-section" id="section-experience">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">3</span> Work Experience</div>
+      </div>
+      <div class="repeat-list" id="experience-list"></div>
+      <button class="btn-add" data-add="experience">+ Add experience</button>
+    </section>
+
+    <!-- Education -->
+    <section class="form-section" id="section-education">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">4</span> Education</div>
+      </div>
+      <div class="repeat-list" id="education-list"></div>
+      <button class="btn-add" data-add="education">+ Add education</button>
+    </section>
+
+    <!-- Skills -->
+    <section class="form-section" id="section-skills">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">5</span> Skills</div>
+      </div>
+      <div class="form-field">
+        <label>Comma-separated list</label>
+        <input type="text" data-field="skillsRaw" placeholder="Project management, Figma, SQL, Public speaking" />
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section class="form-section" id="section-projects">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">6</span> Projects</div>
+      </div>
+      <div class="repeat-list" id="projects-list"></div>
+      <button class="btn-add" data-add="projects">+ Add project</button>
+    </section>
+
+    <!-- Certifications -->
+    <section class="form-section" id="section-certifications">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">7</span> Certifications</div>
+      </div>
+      <div class="repeat-list" id="certifications-list"></div>
+      <button class="btn-add" data-add="certifications">+ Add certification</button>
+    </section>
+
+    <!-- Languages -->
+    <section class="form-section" id="section-languages">
+      <div class="form-section-header">
+        <div class="form-section-title"><span class="num">8</span> Languages</div>
+      </div>
+      <div class="repeat-list" id="languages-list"></div>
+      <button class="btn-add" data-add="languages">+ Add language</button>
+    </section>
+
+  </aside>
+
+  <!-- RIGHT: Preview -->
+  <section class="editor-preview">
+    <div class="editor-preview-frame" id="preview-frame">
+      <div id="resume-render"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.7.2/mammoth.browser.min.js"></script>
+
+<!-- App -->
+<script src="js/templates.js"></script>
+<script src="js/editor.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose an ATS CV Template — GCC Resume Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Source+Serif+Pro:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">GCC</span>
+      <span>GCC Resume Builder</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="templates.html" class="active">Templates</a>
+      <a href="editor.html?action=upload">Upload CV</a>
+      <a href="editor.html?action=upload">Upload CV</a>
+      <a href="index.html#how-it-works">How it works</a>
+    </div>
+  </div>
+</nav>
+
+<header class="templates-header">
+  <div class="container-narrow">
+    <h1>Choose Your ATS CV Template</h1>
+    <p>Browse 50 professionally designed ATS-friendly CV templates. Each one is print-ready and fully editable.</p>
+    <div class="template-filters" id="filters">
+      <button class="filter-chip active" data-filter="All">All <span style="opacity:0.6;">50</span></button>
+      <button class="filter-chip" data-filter="Modern">Modern</button>
+      <button class="filter-chip" data-filter="Traditional">Traditional</button>
+      <button class="filter-chip" data-filter="Simple">Simple</button>
+      <button class="filter-chip" data-filter="Creative">Creative</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="templates-grid" id="grid">
+    <!-- cards injected here -->
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>© 2026 GCC Resume Builder. Built for GCC job seekers.</div>
+    <div>Free · No signup · Your data stays in your browser</div>
+  </div>
+</footer>
+
+<script src="js/templates.js"></script>
+<script>
+  const grid = document.getElementById('grid');
+  const filters = document.getElementById('filters');
+  let activeFilter = 'All';
+
+  function buildCards() {
+    grid.innerHTML = '';
+    const list = activeFilter === 'All'
+      ? RESUME_TEMPLATES
+      : RESUME_TEMPLATES.filter(t => t.category === activeFilter);
+
+    list.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+      card.innerHTML = `
+        <div class="template-preview">
+          <div class="template-preview-inner" data-tpl="${t.id}"></div>
+        </div>
+        <div class="template-card-body">
+          <div>
+            <div class="template-name">${t.name}</div>
+            <div class="template-meta">Template #${t.number} · ${t.category}</div>
+          </div>
+          <div class="template-actions">
+            <a class="btn btn-primary btn-block btn-sm" href="editor.html?template=${t.id}">Create New CV</a>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // After rendering cards, scale the previews so the full A4 page fits inside the card
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.template-preview-inner').forEach(el => {
+        const tplId = el.dataset.tpl;
+        el.innerHTML = renderResume(tplId, SAMPLE_DATA);
+        // Compute scale so the rendered resume (assumed 850px wide) fits the preview width
+        const parent = el.parentElement;
+        const targetWidth = parent.clientWidth;
+        const sourceWidth = 850; // matches editor preview width
+        const scale = targetWidth / sourceWidth;
+        el.style.width = sourceWidth + 'px';
+        el.style.height = (sourceWidth * 11 / 8.5) + 'px';
+        el.style.transform = `scale(${scale})`;
+        el.style.transformOrigin = 'top left';
+      });
+    });
+  }
+
+  filters.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-chip');
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    filters.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === btn));
+    buildCards();
+  });
+
+  buildCards();
+
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.template-preview-inner').forEach(el => {
+      const parent = el.parentElement;
+      const targetWidth = parent.clientWidth;
+      const scale = targetWidth / 850;
+      el.style.transform = `scale(${scale})`;
+    });
+  });
+</script>
+
+</body>
+</html>
