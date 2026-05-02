@@ -140,7 +140,7 @@ export default {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "gpt-5.4-nano",
+            model: "gpt-4.1-mini",
             instructions: "You improve CV content for GCC job applications and ATS readability. Return strict JSON only using the same schema. Preserve all factual details, dates, companies, schools, certifications, projects, languages, phone, email, links, and section count. Do not invent jobs, degrees, certificates, companies, dates, metrics, or skills. Improve grammar, clarity, professional tone, summary, skills wording, project descriptions, and experience bullets. Keep bullets concise, action-oriented, and ATS-friendly. Do not replace real job titles with achievements.",
             input: [
               {
@@ -201,7 +201,7 @@ export default {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "gpt-5.4-nano",
+            model: "gpt-4.1-mini",
             instructions: "You are a precise CV parser for GCC job applications. Return strict JSON only. Preserve every separate experience, education, project, certification, and language entry. Never invent missing details; use empty strings or empty arrays. Experience.role must be a real job title only, usually short, such as HSE Coordinator, Accountant, Site Engineer, Sales Executive, Team Leader, or Meter Technician. Do not put achievements, responsibilities, skills, project names, course names, or long sentences in role. If a line describes work performed, impact, tools, audits, reports, inspections, training, supervision, compliance, or achievements, put it in bullets. If company is unknown, leave company empty. Education.degree must be the qualification name and education.school must be the institution. Keep multiple jobs separate when dates, companies, or role titles change. Put recognized project work into projects and recognized certificates into certifications. If the CV has extra sections that do not fit the standard fields, preserve them in additionalSections with the original section heading as title and each line/item in items. Examples include Awards, Publications, Volunteering, Training, Courses, Hobbies, References, Memberships, Achievements, Additional Certificates, Professional Development, or Portfolio.",
             input: [
               {

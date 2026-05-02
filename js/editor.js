@@ -716,7 +716,7 @@
       } catch (aiErr) {
         console.warn(aiErr);
         data = parseImportedCv(text);
-        setImportStatus('AI import was unavailable, so the standard parser filled the sections.');
+        setImportStatus(`AI import was unavailable: ${aiErr.message}. The standard parser filled the sections.`);
         toast('CV sections filled');
       }
 
