@@ -906,7 +906,15 @@ function _computeDerived(data) {
 
 function renderResume(templateId, data) {
   const tpl = getTemplateById(templateId);
-  if (!tpl) return '<div style="padding:40px;color:#888;">Template not found</div>';
+  if (!tpl) {
+    // If this looks like an external template that hasn't loaded yet,
+    // show a friendly loading state instead of "not found".
+    const isExternal = typeof templateId === 'string' && templateId.startsWith('ext-');
+    if (isExternal) {
+      return '<div style="padding:60px 40px;color:#999;text-align:center;font-family:Inter,sans-serif;font-size:14px;">Loading template…</div>';
+    }
+    return '<div style="padding:40px;color:#888;">Template not found</div>';
+  }
   const colors = COLOR_SCHEMES[tpl.colorKey] || COLOR_SCHEMES.navy;
 
   if (tpl.external) {

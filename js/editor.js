@@ -72,7 +72,9 @@
   function loadTemplateId() {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('template');
-    if (fromUrl && getTemplateById(fromUrl)) return fromUrl;
+    // Trust the URL param even if external templates haven't loaded yet —
+    // we'll re-resolve when 'templates-loaded' fires.
+    if (fromUrl) return fromUrl;
     const fromStorage = localStorage.getItem(STORAGE_TPL);
     if (fromStorage && getTemplateById(fromStorage)) return fromStorage;
     return RESUME_TEMPLATES[0].id;
@@ -1145,7 +1147,16 @@
 
     // Refresh the template switcher once external templates finish loading
     window.addEventListener('templates-loaded', () => {
+      // If the URL asked for a template that just became available,
+      // switch to it and re-render the preview.
+      const params = new URLSearchParams(window.location.search);
+      const fromUrl = params.get('template');
+      if (fromUrl && getTemplateById(fromUrl) && fromUrl !== currentTemplateId) {
+        currentTemplateId = fromUrl;
+        saveTemplateId();
+      }
       buildTemplateSwitcher();
+      renderPreview();
     });
   }
 
