@@ -577,18 +577,103 @@
     };
   }
 
+  async function parseCvWithAi(cvText) {
+    const response = await fetch('/api/parse-cv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvText })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.error || 'AI CV parsing failed');
+    }
+    return result;
+  }
+
+  function normalizeImportedData(imported) {
+    const normalized = {
+      personal: {
+        fullName: imported.personal?.fullName || data.personal.fullName || '',
+        title: imported.personal?.title || data.personal.title || '',
+        email: imported.personal?.email || '',
+        phone: imported.personal?.phone || '',
+        location: imported.personal?.location || data.personal.location || '',
+        website: imported.personal?.website || '',
+        linkedin: imported.personal?.linkedin || ''
+      },
+      summary: imported.summary || '',
+      experience: Array.isArray(imported.experience) ? imported.experience : [],
+      education: Array.isArray(imported.education) ? imported.education : [],
+      skills: Array.isArray(imported.skills) ? imported.skills : [],
+      projects: Array.isArray(imported.projects) ? imported.projects : [],
+      certifications: Array.isArray(imported.certifications) ? imported.certifications : [],
+      languages: Array.isArray(imported.languages) ? imported.languages : []
+    };
+
+    normalized.experience = normalized.experience.map(item => ({
+      role: item.role || '',
+      company: item.company || '',
+      location: item.location || '',
+      start: item.start || '',
+      end: item.end || '',
+      bullets: Array.isArray(item.bullets) ? item.bullets.filter(Boolean) : []
+    })).filter(item => item.role || item.company || item.bullets.length);
+
+    normalized.education = normalized.education.map(item => ({
+      degree: item.degree || '',
+      school: item.school || '',
+      location: item.location || '',
+      start: item.start || '',
+      end: item.end || '',
+      notes: item.notes || ''
+    })).filter(item => item.degree || item.school || item.notes);
+
+    normalized.projects = normalized.projects.map(item => ({
+      name: item.name || '',
+      link: item.link || '',
+      description: item.description || ''
+    })).filter(item => item.name || item.description);
+
+    normalized.certifications = normalized.certifications.map(item => ({
+      name: item.name || '',
+      issuer: item.issuer || '',
+      date: item.date || ''
+    })).filter(item => item.name || item.issuer);
+
+    normalized.languages = normalized.languages.map(item => ({
+      name: item.name || '',
+      level: item.level || ''
+    })).filter(item => item.name);
+
+    normalized.skills = normalized.skills.map(skill => String(skill).trim()).filter(Boolean);
+    normalized.skillsRaw = normalized.skills.join(', ');
+
+    return normalized;
+  }
+
   async function importCv(file) {
     if (!file) return;
     setImportStatus(`Reading ${file.name}...`);
     try {
       const text = await readCvFile(file);
       if (!text.trim()) throw new Error('No readable text found in this CV.');
-      data = parseImportedCv(text);
+
+      try {
+        setImportStatus('AI is reading and organizing your CV...');
+        data = normalizeImportedData(await parseCvWithAi(text));
+        setImportStatus('AI import complete. Please review and adjust the sections below.');
+        toast('AI filled CV sections');
+      } catch (aiErr) {
+        console.warn(aiErr);
+        data = parseImportedCv(text);
+        setImportStatus('AI import was unavailable, so the standard parser filled the sections.');
+        toast('CV sections filled');
+      }
+
       fillSimpleFields();
       renderAllRepeats();
       scheduleRender();
-      setImportStatus('CV imported. Please review and adjust the sections below.');
-      toast('CV sections filled');
     } catch (err) {
       console.error(err);
       setImportStatus(err.message || 'Could not import this CV. Please try another file.');
