@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "gcc-resume-builder-pages",
+  "name": "gccresumebuilder",
   "compatibility_date": "2026-05-02",
   "main": "./worker/index.js",
   "assets": {
