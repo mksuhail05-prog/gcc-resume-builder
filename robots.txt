@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /worker/
+Disallow: /functions/
+Disallow: /*?*
+
+Sitemap: https://gcc-resume-builder-pages.mksuhail05.workers.dev/sitemap.xml
