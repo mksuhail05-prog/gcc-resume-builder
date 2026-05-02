@@ -101,9 +101,21 @@ const cvSchema = {
         },
         required: ["name", "level"]
       }
+    },
+    additionalSections: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          title: emptyStringSchema(),
+          items: { type: "array", items: emptyStringSchema() }
+        },
+        required: ["title", "items"]
+      }
     }
   },
-  required: ["personal", "summary", "experience", "education", "skills", "projects", "certifications", "languages"]
+  required: ["personal", "summary", "experience", "education", "skills", "projects", "certifications", "languages", "additionalSections"]
 };
 
 export default {
@@ -131,7 +143,7 @@ export default {
           },
           body: JSON.stringify({
             model: "gpt-5.4-nano",
-            instructions: "You are a precise CV parser for GCC job applications. Return strict JSON only. Preserve every separate experience, education, project, certification, and language entry. Never invent missing details; use empty strings or empty arrays. Experience.role must be a real job title only, usually short, such as HSE Coordinator, Accountant, Site Engineer, Sales Executive, Team Leader, or Meter Technician. Do not put achievements, responsibilities, skills, project names, course names, or long sentences in role. If a line describes work performed, impact, tools, audits, reports, inspections, training, supervision, compliance, or achievements, put it in bullets. If company is unknown, leave company empty. Education.degree must be the qualification name and education.school must be the institution. Keep multiple jobs separate when dates, companies, or role titles change.",
+            instructions: "You are a precise CV parser for GCC job applications. Return strict JSON only. Preserve every separate experience, education, project, certification, and language entry. Never invent missing details; use empty strings or empty arrays. Experience.role must be a real job title only, usually short, such as HSE Coordinator, Accountant, Site Engineer, Sales Executive, Team Leader, or Meter Technician. Do not put achievements, responsibilities, skills, project names, course names, or long sentences in role. If a line describes work performed, impact, tools, audits, reports, inspections, training, supervision, compliance, or achievements, put it in bullets. If company is unknown, leave company empty. Education.degree must be the qualification name and education.school must be the institution. Keep multiple jobs separate when dates, companies, or role titles change. Put recognized project work into projects and recognized certificates into certifications. If the CV has extra sections that do not fit the standard fields, preserve them in additionalSections with the original section heading as title and each line/item in items. Examples include Awards, Publications, Volunteering, Training, Courses, Hobbies, References, Memberships, Achievements, Additional Certificates, Professional Development, or Portfolio.",
             input: [
               {
                 role: "user",
@@ -145,6 +157,7 @@ export default {
 4. Lines beginning with verbs such as led, managed, prepared, conducted, ensured, monitored, developed, implemented, coordinated, inspected, maintained, provided, supported, handled, improved, achieved, reduced, or increased are bullet points, not role titles.
 5. Do not classify project names, skills, certifications, or education as experience.
 6. If uncertain whether a line is a title or bullet, prefer bullet.
+7. Preserve extra CV sections in additionalSections instead of dropping them.
 
 CV TEXT:
 ${cleanText}`

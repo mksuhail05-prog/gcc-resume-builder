@@ -35,6 +35,9 @@ const SAMPLE_DATA = {
   languages: [
     { name: "English", level: "Native" },
     { name: "Mandarin", level: "Fluent" }
+  ],
+  additionalSections: [
+    { title: "Awards", items: ["Design leadership award, 2023"] }
   ]
 };
 
@@ -69,6 +72,32 @@ function joinDates(item) {
 function contactBits(p, sep = " · ") {
   return [p.email, p.phone, p.location, p.website, p.linkedin]
     .filter(Boolean).map(esc).join(sep);
+}
+
+function renderAdditionalSections(d, c) {
+  if (!nonEmpty(d.additionalSections)) return "";
+  return d.additionalSections.map(section => {
+    const title = esc(section.title || "Additional Information");
+    const items = Array.isArray(section.items) ? section.items.filter(Boolean) : [];
+    if (!items.length) return "";
+    return `
+      <section class="resume-extra-section" style="margin-top: 18pt;">
+        <h2 style="font-size: 12pt; text-transform: uppercase; letter-spacing: 0.08em; color:${c.primary}; margin-bottom: 8pt;">${title}</h2>
+        <ul style="margin: 4pt 0 0 16pt; padding: 0; font-size: 10pt; color:${c.muted}; line-height: 1.55;">
+          ${items.map(item => `<li style="margin-bottom: 3pt;">${esc(item)}</li>`).join("")}
+        </ul>
+      </section>`;
+  }).join("");
+}
+
+function appendAdditionalSections(html, d, c) {
+  const extra = renderAdditionalSections(d, c);
+  if (!extra) return html;
+  const mainClose = html.lastIndexOf("</main>");
+  if (mainClose !== -1) return html.slice(0, mainClose) + extra + html.slice(mainClose);
+  const innerClose = html.lastIndexOf("</div>");
+  if (innerClose !== -1) return html.slice(0, innerClose) + extra + html.slice(innerClose);
+  return html + extra;
 }
 
 // --- Design 1: Modern Sidebar (left dark column) ---
@@ -707,7 +736,7 @@ function renderResume(templateId, data) {
   if (!tpl) return '<div style="padding:40px;color:#888;">Template not found</div>';
   const design = getDesignById(tpl.designId);
   const colors = COLOR_SCHEMES[tpl.colorKey];
-  return design.fn(data, colors);
+  return appendAdditionalSections(design.fn(data, colors), data, colors);
 }
 
 // Expose

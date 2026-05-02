@@ -47,7 +47,8 @@
     skills: ['Skill 1', 'Skill 2', 'Skill 3', 'Skill 4'],
     projects: [],
     certifications: [],
-    languages: []
+    languages: [],
+    additionalSections: []
   };
 
   let data = loadData();
@@ -145,6 +146,13 @@
         { key: 'level', label: 'Proficiency', type: 'text' }
       ],
       empty: () => ({ name: '', level: '' })
+    },
+    additionalSections: {
+      fields: [
+        { key: 'title', label: 'Section title', type: 'text', full: true },
+        { key: 'items', label: 'Items (one per line)', type: 'textarea-list', full: true }
+      ],
+      empty: () => ({ title: '', items: [] })
     }
   };
 
@@ -573,7 +581,8 @@
       skills: skills.length ? skills : data.skills,
       projects: projects.length ? projects : data.projects || [],
       certifications: certifications.length ? certifications : data.certifications || [],
-      languages: languages.length ? languages : data.languages || []
+      languages: languages.length ? languages : data.languages || [],
+      additionalSections: data.additionalSections || []
     };
   }
 
@@ -616,7 +625,8 @@
       skills: Array.isArray(imported.skills) ? imported.skills : [],
       projects: Array.isArray(imported.projects) ? imported.projects : [],
       certifications: Array.isArray(imported.certifications) ? imported.certifications : [],
-      languages: Array.isArray(imported.languages) ? imported.languages : []
+      languages: Array.isArray(imported.languages) ? imported.languages : [],
+      additionalSections: Array.isArray(imported.additionalSections) ? imported.additionalSections : []
     };
 
     normalized.experience = normalized.experience.map(item => {
@@ -663,6 +673,13 @@
       name: item.name || '',
       level: item.level || ''
     })).filter(item => item.name);
+
+    normalized.additionalSections = normalized.additionalSections.map(section => ({
+      title: section.title || '',
+      items: Array.isArray(section.items)
+        ? section.items.map(item => String(item).trim()).filter(Boolean)
+        : String(section.content || '').split(/\n+/).map(item => item.trim()).filter(Boolean)
+    })).filter(section => section.title && section.items.length);
 
     normalized.skills = normalized.skills.map(skill => String(skill).trim()).filter(Boolean);
     normalized.skillsRaw = normalized.skills.join(', ');
@@ -1007,6 +1024,19 @@
           spacing: { after: 30 },
           children: [bold(l.name || ''), muted('  —  ' + (l.level || ''))]
         }));
+      });
+    }
+
+    if (Array.isArray(d.additionalSections) && d.additionalSections.length) {
+      d.additionalSections.forEach(section => {
+        children.push(sectionHeading(section.title || 'Additional Information'));
+        (section.items || []).forEach(item => {
+          children.push(new Paragraph({
+            bullet: { level: 0 },
+            spacing: { after: 30 },
+            children: [body(item)]
+          }));
+        });
       });
     }
 
