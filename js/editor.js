@@ -258,79 +258,282 @@
   }
 
   function cleanLine(line) {
-    return line.replace(/\s+/g, ' ').trim();
+    return line
+      .replace(/[•●▪◦]/g, '- ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function normalizeHeading(line) {
+    return cleanLine(line).replace(/[:\-–—]+$/g, '').toLowerCase();
+  }
+
+  function isSectionHeading(line, labels) {
+    const text = normalizeHeading(line);
+    return labels.some(label => {
+      const normalized = label.toLowerCase();
+      return text === normalized || text === normalized.replace(/\s+/g, '');
+    });
   }
 
   function sectionBetween(lines, labels) {
-    const lowerLabels = labels.map(label => label.toLowerCase());
     let start = -1;
     for (let i = 0; i < lines.length; i++) {
-      const text = lines[i].replace(/[:\-]/g, '').toLowerCase();
-      if (lowerLabels.includes(text)) {
+      if (isSectionHeading(lines[i], labels)) {
         start = i + 1;
         break;
       }
     }
     if (start === -1) return [];
-    const stopWords = ['summary', 'profile', 'objective', 'experience', 'work experience', 'employment', 'education', 'skills', 'technical skills', 'projects', 'certifications', 'certificates', 'languages'];
+
+    const stopWords = [
+      'summary', 'profile', 'professional summary', 'career objective', 'objective',
+      'experience', 'work experience', 'professional experience', 'employment history',
+      'education', 'academic qualification', 'academic qualifications', 'qualifications',
+      'skills', 'technical skills', 'core skills', 'key skills',
+      'projects', 'key projects', 'project experience',
+      'certifications', 'certificates', 'licenses', 'licences',
+      'languages', 'language'
+    ];
+
     let end = lines.length;
     for (let i = start; i < lines.length; i++) {
-      const text = lines[i].replace(/[:\-]/g, '').toLowerCase();
-      if (stopWords.includes(text)) {
+      if (isSectionHeading(lines[i], stopWords)) {
         end = i;
         break;
       }
     }
-    return lines.slice(start, end).filter(Boolean);
+    return lines.slice(start, end).map(cleanLine).filter(Boolean);
+  }
+
+  function hasDate(line) {
+    return /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)?[a-z]*\.?\s*(?:19|20)\d{2}|present|current|till date|to date/i.test(line);
+  }
+
+  function extractDates(lines) {
+    const text = lines.join(' ');
+    const years = text.match(/(?:19|20)\d{2}/g) || [];
+    const start = years[0] || '';
+    let end = years[1] || '';
+    if (/present|current|till date|to date/i.test(text)) end = 'Present';
+    return { start, end };
+  }
+
+  function stripDateText(line) {
+    return cleanLine(line)
+      .replace(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*/ig, '')
+      .replace(/\b(?:19|20)\d{2}\b/g, '')
+      .replace(/\b(?:present|current|till date|to date)\b/ig, '')
+      .replace(/\s*(?:-|–|—|to)\s*$/i, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  function likelyRole(line) {
+    return /manager|engineer|developer|designer|analyst|accountant|sales|executive|officer|specialist|consultant|coordinator|assistant|administrator|supervisor|director|lead|head|hr|recruiter|technician|nurse|teacher|marketing|finance|operations|customer|support|secretary|driver|chef|waiter|cashier/i.test(line);
+  }
+
+  function likelyDegree(line) {
+    return /bachelor|master|mba|b\.?sc|m\.?sc|b\.?com|m\.?com|b\.?tech|m\.?tech|degree|diploma|certificate|university|college|school|institute|secondary|higher secondary|phd|doctorate/i.test(line);
+  }
+
+  function isListMarker(line) {
+    return /^[-*]\s+|^\d+[.)]\s+/.test(line);
+  }
+
+  function splitIntoEntries(lines, isNewEntry) {
+    const entries = [];
+    let current = [];
+
+    lines.forEach(line => {
+      const cleaned = cleanLine(line);
+      if (!cleaned) return;
+
+      if (current.length && isNewEntry(cleaned, current)) {
+        entries.push(current);
+        current = [];
+      }
+      current.push(cleaned);
+    });
+
+    if (current.length) entries.push(current);
+    return entries;
+  }
+
+  function parseExperienceEntry(lines) {
+    const dateInfo = extractDates(lines);
+    const nonBulletLines = lines
+      .filter(line => !isListMarker(line))
+      .map(stripDateText)
+      .filter(Boolean);
+
+    let role = nonBulletLines.find(likelyRole) || nonBulletLines[0] || '';
+    let company = '';
+    let location = '';
+
+    if (role.includes('|')) {
+      const parts = role.split('|').map(cleanLine).filter(Boolean);
+      role = parts[0] || role;
+      company = parts[1] || '';
+      location = parts[2] || '';
+    } else if (role.includes(' at ')) {
+      const parts = role.split(/\s+at\s+/i).map(cleanLine);
+      role = parts[0] || role;
+      company = parts[1] || '';
+    } else if (role.includes(' - ') || role.includes(' – ') || role.includes(' — ')) {
+      const parts = role.split(/\s[-–—]\s/).map(cleanLine).filter(Boolean);
+      if (parts.length >= 2) {
+        role = parts[0];
+        company = parts[1];
+      }
+    }
+
+    if (!company) {
+      company = nonBulletLines.find(line => line !== role && !likelyRole(line)) || '';
+    }
+
+    const bulletCandidates = lines
+      .filter(line => line !== role && line !== company)
+      .map(line => cleanLine(line).replace(/^[-*]\s+|^\d+[.)]\s+/, ''))
+      .filter(line => line && !hasDate(line) && line !== role && line !== company);
+
+    return {
+      role,
+      company,
+      location,
+      start: dateInfo.start,
+      end: dateInfo.end,
+      bullets: bulletCandidates.slice(0, 8)
+    };
+  }
+
+  function parseExperience(lines) {
+    const chunks = splitIntoEntries(lines, (line, current) => {
+      if (isListMarker(line)) return false;
+      if (hasDate(line) && current.some(hasDate)) return true;
+      if (likelyRole(line) && current.length >= 3 && current.some(hasDate)) return true;
+      return false;
+    });
+
+    return chunks
+      .map(parseExperienceEntry)
+      .filter(item => item.role || item.company || item.bullets.length)
+      .slice(0, 12);
+  }
+
+  function parseEducationEntry(lines) {
+    const dateInfo = extractDates(lines);
+    const cleaned = lines.map(stripDateText).filter(Boolean);
+    const degree = cleaned.find(likelyDegree) || cleaned[0] || '';
+    const school = cleaned.find(line => line !== degree && /university|college|school|institute|academy/i.test(line)) || '';
+    const notes = cleaned.filter(line => line !== degree && line !== school).slice(0, 3).join(' · ');
+
+    return {
+      degree,
+      school,
+      location: '',
+      start: dateInfo.start,
+      end: dateInfo.end,
+      notes
+    };
+  }
+
+  function parseEducation(lines) {
+    const chunks = splitIntoEntries(lines, (line, current) => {
+      if (likelyDegree(line) && current.some(likelyDegree)) return true;
+      if (hasDate(line) && current.some(hasDate) && current.length >= 2) return true;
+      return false;
+    });
+
+    return chunks
+      .map(parseEducationEntry)
+      .filter(item => item.degree || item.school)
+      .slice(0, 8);
+  }
+
+  function parseCertifications(lines) {
+    const chunks = splitIntoEntries(lines, (line, current) => {
+      if (isListMarker(line)) return true;
+      if (hasDate(line) && current.some(hasDate)) return true;
+      return current.length >= 2 && /^[A-Z0-9]/.test(line);
+    });
+
+    return chunks.map(chunk => {
+      const dateInfo = extractDates(chunk);
+      const name = stripDateText(chunk[0] || '');
+      const issuer = stripDateText(chunk.find((line, idx) => idx > 0 && !hasDate(line)) || '');
+      return { name, issuer, date: dateInfo.end || dateInfo.start };
+    }).filter(item => item.name).slice(0, 12);
+  }
+
+  function parseProjects(lines) {
+    const chunks = splitIntoEntries(lines, (line, current) => {
+      if (isListMarker(line)) return true;
+      if (/project|system|website|app|platform|portal|dashboard|implementation/i.test(line) && current.length >= 2) return true;
+      return current.length >= 4;
+    });
+
+    return chunks.map(chunk => {
+      const first = cleanLine(chunk[0] || '').replace(/^[-*]\s+|^\d+[.)]\s+/, '');
+      const link = chunk.find(line => /https?:|www\.|github\.com/i.test(line)) || '';
+      const description = chunk
+        .slice(1)
+        .filter(line => line !== link)
+        .map(line => line.replace(/^[-*]\s+|^\d+[.)]\s+/, ''))
+        .join(' ');
+      return { name: first, link, description };
+    }).filter(item => item.name).slice(0, 10);
+  }
+
+  function parseLanguages(lines) {
+    return lines.flatMap(line => line.split(/[,|]/)).map(item => {
+      const parts = item.split(/[-–—:]/).map(cleanLine).filter(Boolean);
+      return { name: parts[0] || '', level: parts[1] || '' };
+    }).filter(item => item.name).slice(0, 10);
+  }
+
+  function parseSkills(lines) {
+    return lines
+      .join(', ')
+      .split(/[,|;]/)
+      .map(skill => skill.replace(/^[-*]\s+/, '').trim())
+      .filter(Boolean)
+      .slice(0, 40);
   }
 
   function parseImportedCv(text) {
-    const lines = text.split(/\r?\n|(?<=\.)\s{2,}/).map(cleanLine).filter(Boolean);
+    const lines = text
+      .split(/\r?\n|(?<=\.)\s{2,}/)
+      .map(cleanLine)
+      .filter(Boolean);
+
     const joined = lines.join('\n');
     const email = joined.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || '';
     const phone = joined.match(/(?:\+?\d[\d\s().-]{7,}\d)/)?.[0] || '';
     const linkedin = joined.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/i)?.[0] || '';
     const website = joined.match(/(?:https?:\/\/)?(?:www\.)?(?!linkedin\.com)([a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/i)?.[0] || '';
-    const firstContentLine = lines.find(line => !line.includes('@') && !line.match(/\d{7,}/) && !/linkedin|www\.|https?:/i.test(line)) || '';
+    const firstContentLine = lines.find(line => !line.includes('@') && !line.match(/\d{7,}/) && !/linkedin|www\.|https?:/i.test(line) && !isSectionHeading(line, ['resume', 'curriculum vitae', 'cv'])) || '';
 
     const summaryLines = sectionBetween(lines, ['summary', 'profile', 'professional summary', 'career objective', 'objective']);
     const skillsLines = sectionBetween(lines, ['skills', 'technical skills', 'core skills', 'key skills']);
-    const educationLines = sectionBetween(lines, ['education', 'academic qualification', 'qualifications']);
-    const certificationLines = sectionBetween(lines, ['certifications', 'certificates', 'licenses']);
-    const projectLines = sectionBetween(lines, ['projects', 'key projects']);
+    const educationLines = sectionBetween(lines, ['education', 'academic qualification', 'academic qualifications', 'qualifications']);
+    const certificationLines = sectionBetween(lines, ['certifications', 'certificates', 'licenses', 'licences']);
+    const projectLines = sectionBetween(lines, ['projects', 'key projects', 'project experience']);
+    const languageLines = sectionBetween(lines, ['languages', 'language']);
     const experienceLines = sectionBetween(lines, ['experience', 'work experience', 'professional experience', 'employment history']);
 
-    const summary = summaryLines.slice(0, 4).join(' ') || DEFAULT_DATA.summary;
-    const skillsRaw = skillsLines.join(', ').split(/[,•|]/).map(cleanLine).filter(Boolean).slice(0, 24).join(', ');
-
-    const experience = [];
-    if (experienceLines.length) {
-      const roleLine = experienceLines.find(line => /manager|engineer|developer|designer|analyst|accountant|sales|executive|officer|specialist|consultant|coordinator|assistant|administrator|supervisor|director|lead/i.test(line)) || experienceLines[0];
-      const dateLine = experienceLines.find(line => /(?:19|20)\d{2}|present|current/i.test(line)) || '';
-      const bullets = experienceLines.filter(line => line !== roleLine && line !== dateLine).slice(0, 5);
-      experience.push({
-        role: roleLine || '',
-        company: '',
-        location: '',
-        start: dateLine.match(/(?:19|20)\d{2}/)?.[0] || '',
-        end: /present|current/i.test(dateLine) ? 'Present' : '',
-        bullets
-      });
-    }
-
-    const education = [];
-    if (educationLines.length) {
-      const degreeLine = educationLines.find(line => /bachelor|master|mba|bsc|msc|degree|diploma|university|college|school/i.test(line)) || educationLines[0];
-      education.push({ degree: degreeLine || '', school: '', location: '', start: '', end: '', notes: educationLines.filter(line => line !== degreeLine).slice(0, 2).join(' · ') });
-    }
-
-    const certifications = certificationLines.slice(0, 6).map(line => ({ name: line, issuer: '', date: '' }));
-    const projects = projectLines.slice(0, 4).map(line => ({ name: line, link: '', description: '' }));
+    const skills = parseSkills(skillsLines);
+    const experience = parseExperience(experienceLines);
+    const education = parseEducation(educationLines);
+    const certifications = parseCertifications(certificationLines);
+    const projects = parseProjects(projectLines);
+    const languages = parseLanguages(languageLines);
+    const summary = summaryLines.slice(0, 5).join(' ') || DEFAULT_DATA.summary;
 
     return {
       personal: {
         fullName: firstContentLine || data.personal.fullName || '',
-        title: lines[1] && lines[1] !== email && !lines[1].match(/\d{7,}/) ? lines[1] : data.personal.title || '',
+        title: lines[1] && lines[1] !== email && !lines[1].match(/\d{7,}/) && !isSectionHeading(lines[1], ['summary', 'profile']) ? lines[1] : data.personal.title || '',
         email,
         phone,
         location: data.personal.location || '',
@@ -340,11 +543,11 @@
       summary,
       experience: experience.length ? experience : data.experience,
       education: education.length ? education : data.education,
-      skillsRaw: skillsRaw || data.skillsRaw || '',
-      skills: skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : data.skills,
-      projects,
-      certifications,
-      languages: data.languages || []
+      skillsRaw: skills.length ? skills.join(', ') : data.skillsRaw || '',
+      skills: skills.length ? skills : data.skills,
+      projects: projects.length ? projects : data.projects || [],
+      certifications: certifications.length ? certifications : data.certifications || [],
+      languages: languages.length ? languages : data.languages || []
     };
   }
 
