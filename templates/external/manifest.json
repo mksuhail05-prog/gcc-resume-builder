@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "templates": [
+    {
+      "id": "clean-pro",
+      "name": "Clean Pro",
+      "category": "Modern",
+      "file": "clean-pro.html",
+      "colors": ["navy", "slate", "burgundy", "forest", "charcoal"]
+    },
+    {
+      "id": "executive-classic",
+      "name": "Executive Classic",
+      "category": "Traditional",
+      "file": "executive-classic.html",
+      "colors": ["navy", "burgundy", "charcoal"]
+    }
+  ]
+}

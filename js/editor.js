@@ -1142,6 +1142,11 @@
     document.getElementById('btn-docx').addEventListener('click', exportDocx);
 
     window.addEventListener('resize', fitPreview);
+
+    // Refresh the template switcher once external templates finish loading
+    window.addEventListener('templates-loaded', () => {
+      buildTemplateSwitcher();
+    });
   }
 
   if (document.readyState === 'loading') {

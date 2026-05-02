@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "comment": "Each section appears as a row on the templates page. Add real entries to a section's `templates` array as you upload files. See README.md for instructions.",
+  "sections": [
+    {
+      "id": "recent-2026",
+      "name": "Recent Templates 2026",
+      "description": "Brand new resume designs released for 2026.",
+      "icon": "🆕",
+      "templates": []
+    },
+    {
+      "id": "ats-friendly",
+      "name": "ATS Friendly Resumes",
+      "description": "Clean structure, standard fonts, and parseable sections that pass applicant tracking systems.",
+      "icon": "✓",
+      "templates": []
+    },
+    {
+      "id": "modern",
+      "name": "Modern Resume Templates",
+      "description": "Contemporary layouts with confident typography and crisp spacing.",
+      "icon": "◆",
+      "templates": []
+    },
+    {
+      "id": "professional",
+      "name": "Professional Resume Templates",
+      "description": "Polished designs ideal for established professionals and managers.",
+      "icon": "■",
+      "templates": []
+    },
+    {
+      "id": "minimalist",
+      "name": "Simple & Minimalist Templates",
+      "description": "Quiet typography, lots of whitespace, no distractions.",
+      "icon": "◯",
+      "templates": []
+    },
+    {
+      "id": "creative",
+      "name": "Creative Resume Templates",
+      "description": "Bold designs for designers, marketers, and creative roles.",
+      "icon": "✦",
+      "templates": []
+    },
+    {
+      "id": "with-photo",
+      "name": "Resume Templates with Photo",
+      "description": "Layouts that include a profile photo — common in GCC and European markets.",
+      "icon": "◉",
+      "templates": []
+    },
+    {
+      "id": "entry-level",
+      "name": "Entry Level Resumes",
+      "description": "Templates that work even with limited experience — emphasis on education, projects, and skills.",
+      "icon": "▲",
+      "templates": []
+    },
+    {
+      "id": "executive-2page",
+      "name": "2-Page Executive Resume Templates",
+      "description": "Two-page designs for senior leaders with extensive experience and accomplishments.",
+      "icon": "❖",
+      "templates": []
+    },
+    {
+      "id": "career-change",
+      "name": "Career Change Resume Templates",
+      "description": "Layouts that highlight transferable skills over linear experience.",
+      "icon": "↻",
+      "templates": []
+    },
+    {
+      "id": "skill-based",
+      "name": "Skill-Based Resume Templates",
+      "description": "Functional resumes that lead with skills rather than chronological work history.",
+      "icon": "★",
+      "templates": []
+    },
+    {
+      "id": "word",
+      "name": "Word CV Templates",
+      "description": "Microsoft Word (.docx) templates you can edit directly in Word.",
+      "icon": "W",
+      "templates": []
+    }
+  ]
+}

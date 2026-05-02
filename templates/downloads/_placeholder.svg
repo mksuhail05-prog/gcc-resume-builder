@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 440" role="img" aria-label="Template preview placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#eef2f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="340" height="440" fill="url(#bg)"/>
+
+  <!-- Top accent bar -->
+  <rect x="24" y="28" width="120" height="10" rx="3" fill="#cbd5e1"/>
+  <rect x="24" y="48" width="80" height="6" rx="2" fill="#e2e8f0"/>
+
+  <!-- Divider -->
+  <rect x="24" y="80" width="292" height="1" fill="#e2e8f0"/>
+
+  <!-- Sample blocks -->
+  <rect x="24" y="100" width="60" height="6" rx="2" fill="#cbd5e1"/>
+  <rect x="24" y="116" width="240" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="126" width="220" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="136" width="232" height="4" rx="2" fill="#e2e8f0"/>
+
+  <rect x="24" y="166" width="60" height="6" rx="2" fill="#cbd5e1"/>
+  <rect x="24" y="182" width="240" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="192" width="200" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="202" width="220" height="4" rx="2" fill="#e2e8f0"/>
+
+  <rect x="24" y="232" width="60" height="6" rx="2" fill="#cbd5e1"/>
+  <rect x="24" y="248" width="220" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="258" width="200" height="4" rx="2" fill="#e2e8f0"/>
+
+  <rect x="24" y="288" width="60" height="6" rx="2" fill="#cbd5e1"/>
+  <rect x="24" y="304" width="240" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="24" y="314" width="180" height="4" rx="2" fill="#e2e8f0"/>
+
+  <!-- Coming soon badge -->
+  <rect x="105" y="370" width="130" height="34" rx="17" fill="#1e3a8a" opacity="0.08"/>
+  <text x="170" y="392" text-anchor="middle"
+        font-family="Inter, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#1e3a8a">Coming soon</text>
+</svg>

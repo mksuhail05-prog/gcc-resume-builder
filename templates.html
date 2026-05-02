@@ -111,8 +111,28 @@
 
 <header class="templates-header">
   <div class="container-narrow">
-    <h1>Choose Your ATS CV Template</h1>
-    <p>Browse 50 professionally designed ATS-friendly CV templates. Each one is print-ready and fully editable.</p>
+    <h1>Choose Your CV Template</h1>
+    <p>Browse CV templates by category, or scroll down to use our 50 built-in templates with the live editor.</p>
+  </div>
+</header>
+
+<main id="main" class="container">
+
+  <!-- Categorized download sections -->
+  <section class="download-sections" aria-label="Browse CV templates by category">
+    <nav class="download-section-toc" id="download-toc" aria-label="Quick links to template categories"></nav>
+    <div id="download-sections-container">
+      <!-- sections injected here -->
+    </div>
+  </section>
+
+  <!-- Divider before the dynamic gallery -->
+  <div class="dynamic-gallery-divider">
+    <span>Or use our 50 built-in templates with the live editor</span>
+  </div>
+
+  <!-- Filters for dynamic templates -->
+  <div class="container-narrow" style="text-align:center; margin-bottom: 28px;">
     <div class="template-filters" id="filters">
       <button class="filter-chip active" data-filter="All">All <span style="opacity:0.6;">50</span></button>
       <button class="filter-chip" data-filter="Modern">Modern</button>
@@ -121,9 +141,7 @@
       <button class="filter-chip" data-filter="Creative">Creative</button>
     </div>
   </div>
-</header>
 
-<main id="main" class="container">
   <div class="templates-grid" id="grid">
     <!-- cards injected here -->
   </div>
@@ -138,6 +156,118 @@
 
 <script src="js/templates.js"></script>
 <script>
+  // ============================================
+  // Categorized download sections
+  // ============================================
+  const DOWNLOADS_BASE = 'templates/downloads/';
+  const PLACEHOLDER_IMG = DOWNLOADS_BASE + '_placeholder.svg';
+  const MIN_CARDS_PER_SECTION = 3;
+
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  function getFormatLabel(filename) {
+    if (!filename) return 'FILE';
+    const ext = filename.split('.').pop().toLowerCase();
+    if (ext === 'docx' || ext === 'doc') return 'WORD';
+    if (ext === 'pdf') return 'PDF';
+    return ext.toUpperCase();
+  }
+
+  function makeDownloadCard(section, t) {
+    const filePath = DOWNLOADS_BASE + section.id + '/' + t.file;
+    const previewSrc = t.preview ? (DOWNLOADS_BASE + section.id + '/' + t.preview) : PLACEHOLDER_IMG;
+    const fmt = t.format || getFormatLabel(t.file);
+    const downloadName = t.downloadAs || t.file;
+    return `
+      <article class="download-card">
+        <a class="download-card-preview" href="${escHtml(filePath)}" download="${escHtml(downloadName)}" aria-label="Preview ${escHtml(t.name)}">
+          <img src="${escHtml(previewSrc)}" alt="${escHtml(t.name)} preview" loading="lazy" />
+        </a>
+        <div class="download-card-body">
+          <div class="download-card-name">${escHtml(t.name)}</div>
+          <div class="download-card-meta">
+            <span class="download-card-format">${escHtml(fmt)}</span>
+            ${t.tag ? `<span>${escHtml(t.tag)}</span>` : ''}
+          </div>
+          <div class="download-card-actions">
+            <a class="btn btn-primary btn-sm btn-block" href="${escHtml(filePath)}" download="${escHtml(downloadName)}">Download</a>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function makePlaceholderCard() {
+    return `
+      <article class="download-card download-card-placeholder" aria-hidden="true">
+        <div class="download-card-preview">
+          <img src="${PLACEHOLDER_IMG}" alt="" loading="lazy" />
+        </div>
+        <div class="download-card-body">
+          <div class="download-card-name">Coming soon</div>
+          <div class="download-card-meta"><span>New template</span></div>
+          <div class="download-card-actions">
+            <span class="btn btn-sm btn-block">Coming soon</span>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderDownloadSections(manifest) {
+    const container = document.getElementById('download-sections-container');
+    const toc = document.getElementById('download-toc');
+    if (!container || !manifest || !Array.isArray(manifest.sections)) return;
+
+    container.innerHTML = manifest.sections.map(section => {
+      const templates = Array.isArray(section.templates) ? section.templates : [];
+      const realCount = templates.length;
+      const placeholdersNeeded = Math.max(0, MIN_CARDS_PER_SECTION - realCount);
+      const cardsHtml = [
+        ...templates.map(t => makeDownloadCard(section, t)),
+        ...Array(placeholdersNeeded).fill(0).map(makePlaceholderCard)
+      ].join('');
+
+      return `
+        <section class="download-section" id="section-${escHtml(section.id)}" aria-labelledby="heading-${escHtml(section.id)}">
+          <header class="download-section-header">
+            <div class="download-section-header-text">
+              <h2 id="heading-${escHtml(section.id)}">
+                ${section.icon ? `<span class="section-icon" aria-hidden="true">${escHtml(section.icon)}</span>` : ''}
+                <span>${escHtml(section.name)}</span>
+              </h2>
+              ${section.description ? `<p>${escHtml(section.description)}</p>` : ''}
+            </div>
+            <div class="download-section-count">${realCount} template${realCount === 1 ? '' : 's'}${placeholdersNeeded ? ` · ${placeholdersNeeded} coming` : ''}</div>
+          </header>
+          <div class="download-grid">${cardsHtml}</div>
+        </section>`;
+    }).join('');
+
+    // Build TOC quick-links
+    toc.innerHTML = manifest.sections.map(s =>
+      `<a href="#section-${escHtml(s.id)}">${s.icon ? `<span class="toc-icon">${escHtml(s.icon)}</span>` : ''}${escHtml(s.name)}</a>`
+    ).join('');
+  }
+
+  async function loadDownloadSections() {
+    try {
+      const res = await fetch(DOWNLOADS_BASE + 'manifest.json', { cache: 'no-cache' });
+      if (!res.ok) return;
+      const manifest = await res.json();
+      renderDownloadSections(manifest);
+    } catch (e) {
+      console.warn('Could not load download sections manifest:', e);
+    }
+  }
+
+  loadDownloadSections();
+
+  // ============================================
+  // Existing dynamic templates gallery
+  // ============================================
   const grid = document.getElementById('grid');
   const filters = document.getElementById('filters');
   let activeFilter = 'All';
@@ -195,6 +325,9 @@
   });
 
   buildCards();
+
+  // Re-render cards once any external templates finish loading
+  window.addEventListener('templates-loaded', () => buildCards());
 
   window.addEventListener('resize', () => {
     document.querySelectorAll('.template-preview-inner').forEach(el => {

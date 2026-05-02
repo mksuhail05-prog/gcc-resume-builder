@@ -722,6 +722,169 @@ DESIGNS.forEach((design, di) => {
   });
 });
 
+// ===========================================
+// External template engine (Mustache-like)
+// Supports: {{var}}, {{nested.var}}, {{#if x}}...{{/if}},
+//           {{#each list}}...{{/each}}, {{.}} for current item
+// ===========================================
+
+function _resolve(path, root, ctx) {
+  if (path === '.') return ctx;
+  const parts = path.split('.');
+  // try current context first
+  let v = ctx;
+  for (const p of parts) {
+    if (v && typeof v === 'object' && p in v) v = v[p];
+    else { v = undefined; break; }
+  }
+  if (v !== undefined && v !== null) return v;
+  // fall back to root data
+  v = root;
+  for (const p of parts) {
+    if (v && typeof v === 'object' && p in v) v = v[p];
+    else { v = undefined; break; }
+  }
+  return v;
+}
+
+function _truthy(v) {
+  if (v === undefined || v === null || v === false) return false;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === 'string') return v.trim().length > 0;
+  return !!v;
+}
+
+function _findClose(tpl, fromIdx, type) {
+  const open = `{{#${type} `;
+  const open2 = `{{#${type}\t`;
+  const close = `{{/${type}}}`;
+  let depth = 1;
+  let i = fromIdx;
+  while (i < tpl.length && depth > 0) {
+    let nextOpen = tpl.indexOf(open, i);
+    const nextOpen2 = tpl.indexOf(open2, i);
+    if (nextOpen === -1 || (nextOpen2 !== -1 && nextOpen2 < nextOpen)) nextOpen = nextOpen2;
+    const nextClose = tpl.indexOf(close, i);
+    if (nextClose === -1) return tpl.length;
+    if (nextOpen !== -1 && nextOpen < nextClose) {
+      depth++;
+      i = nextOpen + open.length;
+    } else {
+      depth--;
+      if (depth === 0) return nextClose;
+      i = nextClose + close.length;
+    }
+  }
+  return tpl.length;
+}
+
+function renderMustache(tpl, root, ctx) {
+  ctx = ctx === undefined ? root : ctx;
+  let out = '';
+  let i = 0;
+  while (i < tpl.length) {
+    const start = tpl.indexOf('{{', i);
+    if (start === -1) { out += tpl.slice(i); break; }
+    out += tpl.slice(i, start);
+    const end = tpl.indexOf('}}', start);
+    if (end === -1) { out += tpl.slice(start); break; }
+    const tag = tpl.slice(start + 2, end).trim();
+
+    if (tag.startsWith('#each ')) {
+      const key = tag.slice(6).trim();
+      const closeIdx = _findClose(tpl, end + 2, 'each');
+      const body = tpl.slice(end + 2, closeIdx);
+      const items = _resolve(key, root, ctx);
+      if (Array.isArray(items)) {
+        items.forEach(item => { out += renderMustache(body, root, item); });
+      }
+      i = closeIdx + '{{/each}}'.length;
+    } else if (tag.startsWith('#if ')) {
+      const key = tag.slice(4).trim();
+      const closeIdx = _findClose(tpl, end + 2, 'if');
+      const body = tpl.slice(end + 2, closeIdx);
+      if (_truthy(_resolve(key, root, ctx))) {
+        out += renderMustache(body, root, ctx);
+      }
+      i = closeIdx + '{{/if}}'.length;
+    } else if (tag === '.') {
+      const v = ctx;
+      out += esc(v == null ? '' : v);
+      i = end + 2;
+    } else if (tag.startsWith('!') || tag.startsWith('#') || tag.startsWith('/')) {
+      // Unknown directive or comment — skip output
+      i = end + 2;
+    } else if (tag.startsWith('{') && tag.endsWith('}')) {
+      // Triple-brace style for raw HTML (rarely needed)
+      const v = _resolve(tag.slice(1, -1).trim(), root, ctx);
+      out += (v == null ? '' : String(v));
+      i = end + 2;
+    } else {
+      const v = _resolve(tag, root, ctx);
+      out += esc(v == null ? '' : v);
+      i = end + 2;
+    }
+  }
+  return out;
+}
+
+// ===========================================
+// External template loader
+// Reads templates/external/manifest.json and registers each entry
+// ===========================================
+
+const EXTERNAL_BASE_PATH = 'templates/external/';
+
+async function loadExternalTemplates(basePath) {
+  basePath = basePath || EXTERNAL_BASE_PATH;
+  try {
+    const manifestRes = await fetch(basePath + 'manifest.json', { cache: 'no-cache' });
+    if (!manifestRes.ok) return { loaded: 0, skipped: 'no-manifest' };
+    const manifest = await manifestRes.json();
+    const list = Array.isArray(manifest.templates) ? manifest.templates : [];
+    let loaded = 0;
+
+    for (const entry of list) {
+      if (!entry.id || !entry.file) continue;
+      try {
+        const htmlRes = await fetch(basePath + entry.file, { cache: 'no-cache' });
+        if (!htmlRes.ok) continue;
+        const html = await htmlRes.text();
+
+        // Each entry can specify which color schemes to register; default = all
+        const colors = (Array.isArray(entry.colors) && entry.colors.length)
+          ? entry.colors.filter(c => COLOR_SCHEMES[c])
+          : Object.keys(COLOR_SCHEMES);
+
+        colors.forEach(colorKey => {
+          const id = `ext-${entry.id}-${colorKey}`;
+          if (TEMPLATES.some(t => t.id === id)) return; // skip duplicates
+          TEMPLATES.push({
+            id: id,
+            name: `${entry.name || entry.id} · ${COLOR_NAMES[colorKey] || colorKey}`,
+            external: true,
+            html: html,
+            colorKey: colorKey,
+            category: entry.category || 'Modern',
+            number: TEMPLATES.length + 1
+          });
+        });
+        loaded++;
+      } catch (e) {
+        console.warn('External template failed:', entry.file, e);
+      }
+    }
+
+    // Notify listeners
+    try {
+      window.dispatchEvent(new CustomEvent('templates-loaded', { detail: { loaded } }));
+    } catch (e) {}
+    return { loaded };
+  } catch (e) {
+    return { loaded: 0, skipped: 'fetch-error', error: e.message };
+  }
+}
+
 // --- Public API ---
 function getTemplateById(id) {
   return TEMPLATES.find(t => t.id === id);
@@ -734,8 +897,16 @@ function getDesignById(id) {
 function renderResume(templateId, data) {
   const tpl = getTemplateById(templateId);
   if (!tpl) return '<div style="padding:40px;color:#888;">Template not found</div>';
+  const colors = COLOR_SCHEMES[tpl.colorKey] || COLOR_SCHEMES.navy;
+
+  if (tpl.external) {
+    // External HTML template — provide data + colors as `color`
+    const root = Object.assign({}, data, { color: colors });
+    const rendered = renderMustache(tpl.html, root);
+    return appendAdditionalSections(rendered, data, colors);
+  }
+
   const design = getDesignById(tpl.designId);
-  const colors = COLOR_SCHEMES[tpl.colorKey];
   return appendAdditionalSections(design.fn(data, colors), data, colors);
 }
 
@@ -745,3 +916,8 @@ window.SAMPLE_DATA = SAMPLE_DATA;
 window.renderResume = renderResume;
 window.getTemplateById = getTemplateById;
 window.COLOR_SCHEMES = COLOR_SCHEMES;
+window.loadExternalTemplates = loadExternalTemplates;
+window.renderMustache = renderMustache;
+
+// Auto-trigger external loading; pages can listen for 'templates-loaded'
+loadExternalTemplates();
