@@ -182,9 +182,12 @@
     const previewSrc = t.preview ? (DOWNLOADS_BASE + section.id + '/' + t.preview) : PLACEHOLDER_IMG;
     const fmt = t.format || getFormatLabel(t.file);
     const downloadName = t.downloadAs || t.file;
+    const editorLink = t.editorTemplateId ? `editor.html?template=${encodeURIComponent(t.editorTemplateId)}` : null;
+    const previewHref = editorLink || filePath;
+    const previewAttrs = editorLink ? `href="${escHtml(previewHref)}"` : `href="${escHtml(filePath)}" download="${escHtml(downloadName)}"`;
     return `
       <article class="download-card">
-        <a class="download-card-preview" href="${escHtml(filePath)}" download="${escHtml(downloadName)}" aria-label="Preview ${escHtml(t.name)}">
+        <a class="download-card-preview" ${previewAttrs} aria-label="Preview ${escHtml(t.name)}">
           <img src="${escHtml(previewSrc)}" alt="${escHtml(t.name)} preview" loading="lazy" />
         </a>
         <div class="download-card-body">
@@ -194,7 +197,8 @@
             ${t.tag ? `<span>${escHtml(t.tag)}</span>` : ''}
           </div>
           <div class="download-card-actions">
-            <a class="btn btn-primary btn-sm btn-block" href="${escHtml(filePath)}" download="${escHtml(downloadName)}">Download</a>
+            ${editorLink ? `<a class="btn btn-primary btn-sm" href="${escHtml(editorLink)}" style="flex:1;">Use this template</a>` : ''}
+            <a class="btn ${editorLink ? 'btn-secondary' : 'btn-primary btn-block'} btn-sm" href="${escHtml(filePath)}" download="${escHtml(downloadName)}" ${editorLink ? 'title="Download original .docx"' : ''} style="flex:${editorLink ? '0 0 auto' : '1'};">${editorLink ? '⤓' : 'Download'}</a>
           </div>
         </div>
       </article>`;

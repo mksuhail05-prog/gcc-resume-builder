@@ -8,7 +8,48 @@
       "name": "Recent Templates 2026",
       "description": "Brand new resume designs released for 2026.",
       "icon": "🆕",
-      "templates": []
+      "templates": [
+        {
+          "id": "daniel-james",
+          "name": "Daniel James",
+          "file": "daniel-james.docx",
+          "preview": "daniel-james.png",
+          "tag": "Single column · ATS",
+          "editorTemplateId": "ext-daniel-james-navy"
+        },
+        {
+          "id": "emily-rose",
+          "name": "Emily Rose",
+          "file": "emily-rose.docx",
+          "preview": "emily-rose.png",
+          "tag": "Two column · Logo",
+          "editorTemplateId": "ext-emily-rose-navy"
+        },
+        {
+          "id": "ethan-cole",
+          "name": "Ethan Cole",
+          "file": "ethan-cole.docx",
+          "preview": "ethan-cole.png",
+          "tag": "Two column · Logo",
+          "editorTemplateId": "ext-ethan-cole-navy"
+        },
+        {
+          "id": "michael-scott",
+          "name": "Michael Scott",
+          "file": "michael-scott.docx",
+          "preview": "michael-scott.png",
+          "tag": "Two column · Modern",
+          "editorTemplateId": "ext-michael-scott-navy"
+        },
+        {
+          "id": "olivia-grace",
+          "name": "Olivia Grace",
+          "file": "olivia-grace.docx",
+          "preview": "olivia-grace.png",
+          "tag": "Two column · Dark sidebar",
+          "editorTemplateId": "ext-olivia-grace-navy"
+        }
+      ]
     },
     {
       "id": "ats-friendly",

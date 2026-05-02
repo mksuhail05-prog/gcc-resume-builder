@@ -894,14 +894,32 @@ function getDesignById(id) {
   return DESIGNS.find(d => d.id === id);
 }
 
+// Compute helpful derived fields for templates (initials, first/last name)
+function _computeDerived(data) {
+  const fullName = (data && data.personal && data.personal.fullName) || '';
+  const words = fullName.split(/\s+/).filter(Boolean);
+  const initials = words.slice(0, 2).map(w => (w[0] || '').toUpperCase()).join('') || 'YN';
+  const firstName = words[0] || '';
+  const lastName = words.length > 1 ? words[words.length - 1] : '';
+  return { initials, firstName, lastName };
+}
+
 function renderResume(templateId, data) {
   const tpl = getTemplateById(templateId);
   if (!tpl) return '<div style="padding:40px;color:#888;">Template not found</div>';
   const colors = COLOR_SCHEMES[tpl.colorKey] || COLOR_SCHEMES.navy;
 
   if (tpl.external) {
-    // External HTML template — provide data + colors as `color`
-    const root = Object.assign({}, data, { color: colors });
+    // External HTML template — provide data + colors + derived fields
+    const derived = _computeDerived(data);
+    const personalWithDerived = Object.assign({}, (data.personal || {}), derived);
+    const root = Object.assign({}, data, {
+      color: colors,
+      personal: personalWithDerived,
+      initials: derived.initials,
+      firstName: derived.firstName,
+      lastName: derived.lastName
+    });
     const rendered = renderMustache(tpl.html, root);
     return appendAdditionalSections(rendered, data, colors);
   }

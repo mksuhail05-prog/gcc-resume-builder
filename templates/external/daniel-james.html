@@ -1,0 +1,81 @@
+<div class="resume-doc" style="font-family: 'Inter', 'Segoe UI', sans-serif; padding: 44pt 48pt; color: #2c3e50;">
+
+  <header style="margin-bottom: 18pt;">
+    <h1 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 30pt; font-weight: 700; letter-spacing: 0.04em; margin: 0 0 4pt; color: #1f3a5f; text-transform: uppercase;">{{personal.fullName}}</h1>
+    {{#if personal.title}}<div style="font-size: 11pt; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #5b7a99; margin-bottom: 10pt;">{{personal.title}}</div>{{/if}}
+    <div style="font-size: 10pt; color: #5b7a99; line-height: 1.7;">
+      {{#if personal.phone}}<span>{{personal.phone}}</span>{{/if}}
+      {{#if personal.email}}<span> &nbsp;/&nbsp; {{personal.email}}</span>{{/if}}
+      {{#if personal.location}}<span> &nbsp;/&nbsp; {{personal.location}}</span>{{/if}}
+      {{#if personal.linkedin}}<span> &nbsp;/&nbsp; {{personal.linkedin}}</span>{{/if}}
+    </div>
+    <div style="border-top: 2pt solid #1f3a5f; margin-top: 14pt;"></div>
+  </header>
+
+  {{#if summary}}
+  <section style="margin-bottom: 20pt;">
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Professional Summary</h2>
+    <p style="font-size: 10.5pt; color: #2c3e50; line-height: 1.55; margin: 0;">{{summary}}</p>
+  </section>
+  {{/if}}
+
+  {{#if experience}}
+  <section style="margin-bottom: 20pt;">
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 10pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Work Experience</h2>
+    {{#each experience}}
+    <div style="margin-bottom: 14pt;">
+      <div style="font-weight: 700; font-size: 11pt; color: #1f3a5f;">{{role}}{{#if company}} – {{company}}{{/if}}</div>
+      <div style="font-size: 9.5pt; font-style: italic; color: #5b7a99; margin-bottom: 5pt;">{{location}}{{#if start}} - {{start}}{{#if end}} - {{end}}{{/if}}{{/if}}</div>
+      {{#if bullets}}
+      <ul style="margin: 0 0 0 18pt; padding: 0; font-size: 10pt; color: #2c3e50; line-height: 1.55;">
+        {{#each bullets}}<li style="margin-bottom: 3pt;">{{.}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  {{#if education}}
+  <section style="margin-bottom: 20pt;">
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 10pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Education &amp; Certifications</h2>
+    {{#each education}}
+    <div style="margin-bottom: 8pt;">
+      <div style="font-weight: 700; font-size: 11pt; color: #1f3a5f;">{{degree}}</div>
+      <div style="font-size: 10pt; font-weight: 600; color: #2c3e50;">{{school}}{{#if location}}, {{location}}{{/if}}{{#if end}}, {{end}}{{/if}}</div>
+      {{#if notes}}<div style="font-size: 9.5pt; color: #5b7a99; margin-top: 2pt;">{{notes}}</div>{{/if}}
+    </div>
+    {{/each}}
+    {{#each certifications}}
+    <div style="margin-bottom: 8pt;">
+      <div style="font-weight: 700; font-size: 11pt; color: #1f3a5f;">{{name}}</div>
+      <div style="font-size: 10pt; font-weight: 600; color: #2c3e50;">{{issuer}}{{#if date}}, {{date}}{{/if}}</div>
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  {{#if skills}}
+  <section style="margin-bottom: 20pt;">
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Relevant Skills</h2>
+    <p style="font-size: 10.5pt; color: #2c3e50; line-height: 1.7; margin: 0;">{{#each skills}}<span>{{.}} &nbsp;/&nbsp; </span>{{/each}}</p>
+  </section>
+  {{/if}}
+
+  {{#if projects}}
+  <section style="margin-bottom: 18pt;">
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Projects</h2>
+    {{#each projects}}
+    <div style="margin-bottom: 6pt; font-size: 10pt;"><strong>{{name}}</strong>{{#if link}} <span style="color: #5b7a99;">— {{link}}</span>{{/if}}<br/><span style="color: #2c3e50;">{{description}}</span></div>
+    {{/each}}
+  </section>
+  {{/if}}
+
+  {{#if languages}}
+  <section>
+    <h2 style="font-size: 11.5pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f3a5f; margin: 0 0 8pt; padding-bottom: 4pt; border-bottom: 1pt solid #cfd9e3;">Languages</h2>
+    <p style="font-size: 10.5pt; margin: 0;">{{#each languages}}<span><strong>{{name}}</strong>{{#if level}} <span style="color: #5b7a99;">— {{level}}</span>{{/if}} &nbsp;/&nbsp; </span>{{/each}}</p>
+  </section>
+  {{/if}}
+
+</div>

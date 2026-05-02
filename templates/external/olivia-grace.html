@@ -1,0 +1,96 @@
+<div class="resume-doc" style="font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #2c3a4b; display: grid; grid-template-columns: 32% 1fr; min-height: 1120px;">
+
+  <!-- Sidebar (dark navy) -->
+  <aside style="background: #2a3848; padding: 36pt 26pt; color: #e9eef3;">
+
+    <!-- Circular initials logo -->
+    <div style="width: 70pt; height: 70pt; border: 1.5pt solid #e9eef3; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 0 24pt;">
+      <span style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 22pt; font-weight: 600; letter-spacing: 0.04em; color: #e9eef3;">{{initials}}</span>
+    </div>
+
+    <div style="margin-bottom: 24pt; font-size: 9.5pt; line-height: 1.9; color: #e9eef3;">
+      {{#if personal.phone}}<div style="display: flex; align-items: center; gap: 8pt; margin-bottom: 4pt;"><span style="display: inline-grid; place-items: center; width: 16pt; height: 16pt; border-radius: 50%; background: #e9eef3; color: #2a3848; font-size: 8pt; font-weight: 700;">☏</span><span>{{personal.phone}}</span></div>{{/if}}
+      {{#if personal.email}}<div style="display: flex; align-items: center; gap: 8pt; margin-bottom: 4pt;"><span style="display: inline-grid; place-items: center; width: 16pt; height: 16pt; border-radius: 50%; background: #e9eef3; color: #2a3848; font-size: 8pt; font-weight: 700;">@</span><span style="word-break: break-all;">{{personal.email}}</span></div>{{/if}}
+      {{#if personal.location}}<div style="display: flex; align-items: center; gap: 8pt; margin-bottom: 4pt;"><span style="display: inline-grid; place-items: center; width: 16pt; height: 16pt; border-radius: 50%; background: #e9eef3; color: #2a3848; font-size: 8pt; font-weight: 700;">⌖</span><span>{{personal.location}}</span></div>{{/if}}
+      {{#if personal.linkedin}}<div style="display: flex; align-items: center; gap: 8pt;"><span style="display: inline-grid; place-items: center; width: 16pt; height: 16pt; border-radius: 50%; background: #e9eef3; color: #2a3848; font-size: 8pt; font-weight: 700;">in</span><span style="word-break: break-all;">{{personal.linkedin}}</span></div>{{/if}}
+    </div>
+
+    {{#if education}}
+    <section style="margin-bottom: 22pt;">
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 13pt; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #e9eef3; margin: 0 0 12pt; padding-bottom: 4pt; border-bottom: 1pt solid rgba(233,238,243,0.3);">Education</h2>
+      {{#each education}}
+      <div style="margin-bottom: 10pt; font-size: 9.5pt;">
+        <div style="font-weight: 700; color: #e9eef3;">{{degree}}</div>
+        <div style="color: #e9eef3;">{{school}}{{#if location}}, {{location}}{{/if}}</div>
+        {{#if start}}<div style="color: #b8c4d2; font-size: 9pt;">{{start}}{{#if end}} – {{end}}{{/if}}</div>{{/if}}
+        {{#if notes}}<div style="color: #b8c4d2; font-size: 9pt; font-style: italic;">{{notes}}</div>{{/if}}
+      </div>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if skills}}
+    <section>
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 13pt; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #e9eef3; margin: 0 0 12pt; padding-bottom: 4pt; border-bottom: 1pt solid rgba(233,238,243,0.3);">Skills</h2>
+      <div style="font-size: 9.5pt; color: #e9eef3; line-height: 1.9;">
+        {{#each skills}}<div style="display: flex; gap: 8pt; align-items: center;"><span style="color: #c9a861;">●</span><span>{{.}}</span></div>{{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+  </aside>
+
+  <!-- Main content -->
+  <main style="padding: 36pt 30pt;">
+
+    <header style="margin-bottom: 22pt;">
+      <h1 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 38pt; font-weight: 600; letter-spacing: -0.01em; line-height: 1.05; margin: 0 0 4pt; color: #2c3a4b;">
+        <span style="color: #2c3a4b;">{{firstName}}</span> <span style="color: #c9a861;">{{lastName}}</span>
+      </h1>
+      {{#if personal.title}}<div style="font-size: 11pt; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: #5b6776; margin-top: 4pt;">{{personal.title}}</div>{{/if}}
+    </header>
+
+    {{#if summary}}
+    <section style="margin-bottom: 20pt;">
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 14pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #2c3a4b; margin: 0 0 8pt; padding-bottom: 6pt; border-bottom: 1pt solid #d6cfc1;">Summary Statement</h2>
+      <p style="font-size: 10pt; color: #2c3a4b; line-height: 1.6; margin: 0;">{{summary}}</p>
+    </section>
+    {{/if}}
+
+    {{#if experience}}
+    <section style="margin-bottom: 20pt;">
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 14pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #2c3a4b; margin: 0 0 12pt; padding-bottom: 6pt; border-bottom: 1pt solid #d6cfc1;">Experience</h2>
+      {{#each experience}}
+      <div style="margin-bottom: 14pt;">
+        <div style="font-weight: 700; font-size: 11pt; letter-spacing: 0.04em; text-transform: uppercase; color: #2c3a4b;">{{role}}{{#if company}} / {{company}}{{/if}}</div>
+        <div style="font-size: 9.5pt; font-style: italic; color: #5b6776; margin-bottom: 5pt;">{{#if location}}Location / {{/if}}{{location}}{{#if start}} | {{start}}{{#if end}} – {{end}}{{/if}}{{/if}}</div>
+        {{#if bullets}}
+        <ul style="margin: 4pt 0 0 16pt; padding: 0; font-size: 10pt; color: #2c3a4b; line-height: 1.55;">
+          {{#each bullets}}<li style="margin-bottom: 3pt;">{{.}}</li>{{/each}}
+        </ul>
+        {{/if}}
+      </div>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if projects}}
+    <section style="margin-bottom: 18pt;">
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 14pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #2c3a4b; margin: 0 0 8pt; padding-bottom: 6pt; border-bottom: 1pt solid #d6cfc1;">Projects</h2>
+      {{#each projects}}
+      <div style="margin-bottom: 6pt; font-size: 10pt;"><strong>{{name}}</strong>{{#if link}} <span style="color: #5b6776; font-size: 9pt;">— {{link}}</span>{{/if}}<br/><span style="color: #2c3a4b;">{{description}}</span></div>
+      {{/each}}
+    </section>
+    {{/if}}
+
+    {{#if certifications}}
+    <section>
+      <h2 style="font-family: 'Source Serif Pro', Georgia, serif; font-size: 14pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #2c3a4b; margin: 0 0 8pt; padding-bottom: 6pt; border-bottom: 1pt solid #d6cfc1;">Certifications</h2>
+      {{#each certifications}}
+      <div style="font-size: 10pt; margin-bottom: 4pt;"><strong>{{name}}</strong>{{#if issuer}} — <span style="color: #5b6776;">{{issuer}}</span>{{/if}}{{#if date}} <span style="color: #5b6776;">({{date}})</span>{{/if}}</div>
+      {{/each}}
+    </section>
+    {{/if}}
+
+  </main>
+</div>

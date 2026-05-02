@@ -3,6 +3,41 @@
   "version": 1,
   "templates": [
     {
+      "id": "daniel-james",
+      "name": "Daniel James",
+      "category": "Traditional",
+      "file": "daniel-james.html",
+      "colors": ["navy"]
+    },
+    {
+      "id": "emily-rose",
+      "name": "Emily Rose",
+      "category": "Modern",
+      "file": "emily-rose.html",
+      "colors": ["navy"]
+    },
+    {
+      "id": "ethan-cole",
+      "name": "Ethan Cole",
+      "category": "Modern",
+      "file": "ethan-cole.html",
+      "colors": ["navy"]
+    },
+    {
+      "id": "michael-scott",
+      "name": "Michael Scott",
+      "category": "Modern",
+      "file": "michael-scott.html",
+      "colors": ["navy"]
+    },
+    {
+      "id": "olivia-grace",
+      "name": "Olivia Grace",
+      "category": "Modern",
+      "file": "olivia-grace.html",
+      "colors": ["navy"]
+    },
+    {
       "id": "clean-pro",
       "name": "Clean Pro",
       "category": "Modern",
