@@ -783,8 +783,8 @@ button {
   max-width: 850px;
   box-shadow: var(--shadow-lg);
   border-radius: 4px;
-  overflow: hidden;
-  aspect-ratio: 8.5 / 11;
+  overflow: visible;
+  min-height: 1100px;
   position: relative;
 }
 

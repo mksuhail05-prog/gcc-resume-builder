@@ -337,6 +337,16 @@
     return /bachelor|master|mba|b\.?sc|m\.?sc|b\.?com|m\.?com|b\.?tech|m\.?tech|degree|diploma|certificate|university|college|school|institute|secondary|higher secondary|phd|doctorate/i.test(line);
   }
 
+  function likelyEducationStart(line) {
+    return /bachelor|master|mba|b\.?sc|m\.?sc|b\.?com|m\.?com|b\.?tech|m\.?tech|degree|diploma|certificate|secondary|higher secondary|phd|doctorate/i.test(line);
+  }
+
+  function likelyExperienceHeader(line) {
+    const text = stripDateText(line);
+    if (isListMarker(text) || text.length > 95) return false;
+    return likelyRole(text) || /\s[-–—|]\s/.test(text);
+  }
+
   function isListMarker(line) {
     return /^[-*]\s+|^\d+[.)]\s+/.test(line);
   }
@@ -393,9 +403,11 @@
     }
 
     const bulletCandidates = lines
-      .filter(line => line !== role && line !== company)
       .map(line => cleanLine(line).replace(/^[-*]\s+|^\d+[.)]\s+/, ''))
-      .filter(line => line && !hasDate(line) && line !== role && line !== company);
+      .filter(line => {
+        const stripped = stripDateText(line);
+        return line && !hasDate(line) && stripped !== role && stripped !== company;
+      });
 
     return {
       role,
@@ -408,12 +420,26 @@
   }
 
   function parseExperience(lines) {
-    const chunks = splitIntoEntries(lines, (line, current) => {
-      if (isListMarker(line)) return false;
-      if (hasDate(line) && current.some(hasDate)) return true;
-      if (likelyRole(line) && current.length >= 3 && current.some(hasDate)) return true;
-      return false;
+    const chunks = [];
+    let current = [];
+
+    lines.forEach((line, idx) => {
+      const cleaned = cleanLine(line);
+      if (!cleaned) return;
+
+      const nextLines = lines.slice(idx + 1, idx + 3);
+      const startsNewDatedEntry = current.length >= 3 && current.some(hasDate) && hasDate(cleaned);
+      const startsNewHeaderEntry = current.length >= 3 && current.some(hasDate) && likelyExperienceHeader(cleaned) && nextLines.some(hasDate);
+
+      if (current.length && (startsNewDatedEntry || startsNewHeaderEntry)) {
+        chunks.push(current);
+        current = [];
+      }
+
+      current.push(cleaned);
     });
+
+    if (current.length) chunks.push(current);
 
     return chunks
       .map(parseExperienceEntry)
@@ -440,8 +466,8 @@
 
   function parseEducation(lines) {
     const chunks = splitIntoEntries(lines, (line, current) => {
-      if (likelyDegree(line) && current.some(likelyDegree)) return true;
-      if (hasDate(line) && current.some(hasDate) && current.length >= 2) return true;
+      if (likelyEducationStart(line) && current.some(likelyEducationStart) && (current.some(hasDate) || current.length >= 3)) return true;
+      if (hasDate(line) && current.some(hasDate) && current.some(likelyEducationStart)) return true;
       return false;
     });
 
@@ -644,14 +670,18 @@
     const render = document.getElementById('resume-render');
     if (!frame || !render) return;
     const sourceWidth = 850;
+    const pageHeight = sourceWidth * 11 / 8.5;
     const targetWidth = frame.clientWidth;
     const scale = targetWidth / sourceWidth;
     render.style.width = sourceWidth + 'px';
-    render.style.minHeight = (sourceWidth * 11 / 8.5) + 'px';
+    render.style.minHeight = pageHeight + 'px';
     render.style.transform = `scale(${scale})`;
     render.style.transformOrigin = 'top left';
-    // Adjust frame height to match scaled content
-    frame.style.height = (sourceWidth * 11 / 8.5 * scale) + 'px';
+
+    requestAnimationFrame(() => {
+      const contentHeight = Math.max(pageHeight, render.scrollHeight);
+      frame.style.height = (contentHeight * scale) + 'px';
+    });
   }
 
   function renderPreview() {
