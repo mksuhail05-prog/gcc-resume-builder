@@ -586,6 +586,20 @@
     };
   }
 
+  async function improveCvWithAi(cvData) {
+    const response = await fetch('/api/improve-cv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvData })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.error || 'AI CV improvement failed');
+    }
+    return result;
+  }
+
   async function parseCvWithAi(cvText) {
     const response = await fetch('/api/parse-cv', {
       method: 'POST',
@@ -809,6 +823,42 @@
     if (!target) return;
     target.innerHTML = renderResume(currentTemplateId, data);
     fitPreview();
+  }
+
+  async function improveCurrentCv() {
+    const btn = document.getElementById('btn-ai-improve');
+    if (!btn) return;
+
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Improving...';
+    setImportStatus('AI is improving your CV content...');
+
+    try {
+      const improved = normalizeImportedData(await improveCvWithAi(data));
+      data = {
+        ...improved,
+        personal: {
+          ...improved.personal,
+          email: data.personal.email,
+          phone: data.personal.phone,
+          website: data.personal.website,
+          linkedin: data.personal.linkedin
+        }
+      };
+      fillSimpleFields();
+      renderAllRepeats();
+      scheduleRender();
+      setImportStatus('AI improvement complete. Please review before downloading.');
+      toast('CV improved with AI');
+    } catch (err) {
+      console.error(err);
+      setImportStatus(err.message || 'AI improvement failed.');
+      toast('AI improvement failed');
+    } finally {
+      btn.textContent = originalLabel;
+      btn.disabled = false;
+    }
   }
 
   // ----- PDF Export -----
@@ -1087,6 +1137,7 @@
     const params = new URLSearchParams(window.location.search);
     setStartMode(params.get('action') === 'upload' ? 'upload' : 'new');
 
+    document.getElementById('btn-ai-improve')?.addEventListener('click', improveCurrentCv);
     document.getElementById('btn-pdf').addEventListener('click', exportPdf);
     document.getElementById('btn-docx').addEventListener('click', exportDocx);
 

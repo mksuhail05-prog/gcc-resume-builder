@@ -122,6 +122,65 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === "/api/improve-cv" && request.method === "POST") {
+      try {
+        if (!env.OPENAI_API_KEY) {
+          return jsonResponse({ error: "OPENAI_API_KEY is not configured." }, { status: 500 });
+        }
+
+        const { cvData } = await request.json();
+        if (!cvData || typeof cvData !== "object") {
+          return jsonResponse({ error: "CV data is required." }, { status: 400 });
+        }
+
+        const aiResponse = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "gpt-5.4-nano",
+            instructions: "You improve CV content for GCC job applications and ATS readability. Return strict JSON only using the same schema. Preserve all factual details, dates, companies, schools, certifications, projects, languages, phone, email, links, and section count. Do not invent jobs, degrees, certificates, companies, dates, metrics, or skills. Improve grammar, clarity, professional tone, summary, skills wording, project descriptions, and experience bullets. Keep bullets concise, action-oriented, and ATS-friendly. Do not replace real job titles with achievements.",
+            input: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_text",
+                    text: `Improve this CV JSON. Keep personal contact details unchanged. Keep every existing section, including additionalSections. Improve weak bullets and summary using professional GCC recruiter language without inventing facts.\n\nCV JSON:\n${JSON.stringify(cvData).slice(0, 50000)}`
+                  }
+                ]
+              }
+            ],
+            text: {
+              format: {
+                type: "json_schema",
+                name: "gcc_resume_builder_cv",
+                schema: cvSchema,
+                strict: true
+              }
+            },
+            max_output_tokens: 12000
+          })
+        });
+
+        const result = await aiResponse.json();
+
+        if (!aiResponse.ok) {
+          return jsonResponse({ error: result.error?.message || "OpenAI request failed." }, { status: 502 });
+        }
+
+        if (!result.output_text) {
+          return jsonResponse({ error: "AI response did not include parseable output." }, { status: 502 });
+        }
+
+        return jsonResponse(JSON.parse(result.output_text));
+      } catch (error) {
+        return jsonResponse({ error: error.message || "CV improvement failed." }, { status: 500 });
+      }
+    }
+
     if (url.pathname === "/api/parse-cv" && request.method === "POST") {
       try {
         if (!env.OPENAI_API_KEY) {
