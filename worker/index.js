@@ -131,14 +131,23 @@ export default {
           },
           body: JSON.stringify({
             model: "gpt-5.4-nano",
-            instructions: "You extract CV/resume information for GCC job applications. Return strict JSON only. Preserve multiple experience, education, project, certification, and language entries. Do not invent missing details; use empty strings or empty arrays.",
+            instructions: "You are a precise CV parser for GCC job applications. Return strict JSON only. Preserve every separate experience, education, project, certification, and language entry. Never invent missing details; use empty strings or empty arrays. Experience.role must be a real job title only, usually short, such as HSE Coordinator, Accountant, Site Engineer, Sales Executive, Team Leader, or Meter Technician. Do not put achievements, responsibilities, skills, project names, course names, or long sentences in role. If a line describes work performed, impact, tools, audits, reports, inspections, training, supervision, compliance, or achievements, put it in bullets. If company is unknown, leave company empty. Education.degree must be the qualification name and education.school must be the institution. Keep multiple jobs separate when dates, companies, or role titles change.",
             input: [
               {
                 role: "user",
                 content: [
                   {
                     type: "input_text",
-                    text: `Extract this CV into the requested JSON schema. Keep job titles as actual role titles, not achievements or bullet sentences. Put achievements inside bullets.\n\nCV TEXT:\n${cleanText}`
+                    text: `Extract this CV into the requested JSON schema. Follow these rules carefully:
+1. Candidate name and current title come from the header/profile area, not random section text.
+2. Experience entries must be split by real role/company/date changes.
+3. A role/title should normally be under 8 words. Do not use sentences as role titles.
+4. Lines beginning with verbs such as led, managed, prepared, conducted, ensured, monitored, developed, implemented, coordinated, inspected, maintained, provided, supported, handled, improved, achieved, reduced, or increased are bullet points, not role titles.
+5. Do not classify project names, skills, certifications, or education as experience.
+6. If uncertain whether a line is a title or bullet, prefer bullet.
+
+CV TEXT:
+${cleanText}`
                   }
                 ]
               }

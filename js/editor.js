@@ -591,6 +591,14 @@
     return result;
   }
 
+  function looksLikeExperienceBullet(text) {
+    const value = String(text || '').trim();
+    if (!value) return false;
+    if (value.length > 90) return true;
+    if (value.split(/\s+/).length > 10) return true;
+    return /^(led|managed|prepared|conducted|ensured|monitored|developed|implemented|coordinated|inspected|maintained|provided|supported|handled|improved|achieved|reduced|increased|performed|assisted|created|designed|delivered|facilitated|trained|reviewed|reported|enforced|verified)\b/i.test(value);
+  }
+
   function normalizeImportedData(imported) {
     const normalized = {
       personal: {
@@ -611,14 +619,24 @@
       languages: Array.isArray(imported.languages) ? imported.languages : []
     };
 
-    normalized.experience = normalized.experience.map(item => ({
-      role: item.role || '',
-      company: item.company || '',
-      location: item.location || '',
-      start: item.start || '',
-      end: item.end || '',
-      bullets: Array.isArray(item.bullets) ? item.bullets.filter(Boolean) : []
-    })).filter(item => item.role || item.company || item.bullets.length);
+    normalized.experience = normalized.experience.map(item => {
+      const bullets = Array.isArray(item.bullets) ? item.bullets.filter(Boolean) : [];
+      let role = item.role || '';
+
+      if (looksLikeExperienceBullet(role)) {
+        bullets.unshift(role);
+        role = '';
+      }
+
+      return {
+        role,
+        company: item.company || '',
+        location: item.location || '',
+        start: item.start || '',
+        end: item.end || '',
+        bullets
+      };
+    }).filter(item => item.role || item.company || item.bullets.length);
 
     normalized.education = normalized.education.map(item => ({
       degree: item.degree || '',
